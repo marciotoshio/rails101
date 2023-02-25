@@ -1,0 +1,72 @@
+version: '3.7'
+
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+
+services:
+  postgres:
+    image: postgres:10.4-alpine
+    ports:
+      - 5432:5432
+    volumes:
+      - type: volume
+        source: postgres-data
+        target: /var/lib/postgresql/data
+
+  redis:
+    image: redis:6.0.17-alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - type: volume
+        source: redis-data
+        target: /var/lib/redis/data
+
+  development: &development
+    depends_on:
+      - postgres
+      - redis
+    build:
+      context: .
+      args:
+        - github_packages_token=${GITHUB_PACKAGES_TOKEN}
+    image: loop/rails101
+    environment:
+      DATABASE_URL: postgres://postgres@postgres/rails101-dev
+      REDIS_URL: redis://redis:6379
+      GITHUB_PACKAGES_TOKEN: # inherits the value set on the host environment
+      LOCAL_DATABASE: 'true'
+      RAILS_ENV: # inherits the value set on the host environment
+
+  server:
+    <<: *development
+    ports:
+      - target: 3000
+        published: 3001
+        protocol: tcp
+    command:
+      - server
+      - --binding
+      - 0.0.0.0
+      - --pid
+      - /tmp/server.pid
+
+  test: &test
+    <<: *development
+    environment:
+      CI: # inherits the value set on the host environment
+      DATABASE_CLEANER_ALLOW_REMOTE_DATABASE_URL: 'true'
+      DATABASE_URL: postgres://postgres@postgres/rails101-test
+      GITHUB_PACKAGES_TOKEN: # inherits the value set on the host environment
+      RAILS_ENV: test
+      SPEC_OPTS: # inherits the value set on the host environment
+
+  rspec:
+    <<: *test
+    entrypoint:
+      - bundle
+      - exec
+      - rspec

@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  development: &development
+    volumes:
+      - ${HOME}/.irbrc:/root/.irbrc
+      - ${HOME}/.irb-history:/root/.irb-history
+
+  server:
+    <<: *development
+    stdin_open: true
+    tty: true

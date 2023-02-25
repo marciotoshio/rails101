@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -e
+
+DOCKER_BUILDKIT=1 docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.dev.yml build
+
+docker rmi $(docker images -a --filter=dangling=true -q)
