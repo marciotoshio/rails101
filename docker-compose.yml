@@ -31,13 +31,10 @@ services:
       - redis
     build:
       context: .
-      args:
-        - github_packages_token=${GITHUB_PACKAGES_TOKEN}
     image: loop/rails101
     environment:
       DATABASE_URL: postgres://postgres@postgres/rails101-dev
       REDIS_URL: redis://redis:6379
-      GITHUB_PACKAGES_TOKEN: # inherits the value set on the host environment
       LOCAL_DATABASE: 'true'
       RAILS_ENV: # inherits the value set on the host environment
 
@@ -60,7 +57,6 @@ services:
       CI: # inherits the value set on the host environment
       DATABASE_CLEANER_ALLOW_REMOTE_DATABASE_URL: 'true'
       DATABASE_URL: postgres://postgres@postgres/rails101-test
-      GITHUB_PACKAGES_TOKEN: # inherits the value set on the host environment
       RAILS_ENV: test
       SPEC_OPTS: # inherits the value set on the host environment
 
